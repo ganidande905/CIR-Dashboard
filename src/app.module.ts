@@ -4,9 +4,11 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { EmployeesModule } from './employees/employees.module';
+import { DepartmentsModule } from './departments/departments.module';
+import { SubDepartmentsModule } from './sub-departments/sub-departments.module';
 
 @Module({
-  imports: [UsersModule, DatabaseModule, EmployeesModule],
+  imports: [UsersModule, DatabaseModule, EmployeesModule, DepartmentsModule, SubDepartmentsModule,],
   controllers: [AppController],
   providers: [AppService],
 })
