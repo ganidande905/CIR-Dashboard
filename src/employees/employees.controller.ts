@@ -24,12 +24,20 @@ export class EmployeesController {
   }
 
   @Get()
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
   // @UseGuards(JwtAuthGuard)
-  findAll(@Ip() ip: string, @Query('role') role: 'ADMIN' | 'MANAGER' | 'STAFF' ) {
-    this.logger.log(`Request for All Employees\t${ip}`,
-    EmployeesController.name);
-    return this.employeesService.findAll(role);
+  findAll(
+    @Ip() ip: string,
+    @Query('role') role: 'ADMIN' | 'MANAGER' | 'STAFF',
+    @Request() req,
+  ) {
+    this.logger.log(`Request for All Employees\t${ip}`, EmployeesController.name);
+    return this.employeesService.findAllScoped(
+      req.user.id,
+      req.user.role,
+      req.user.subDepartmentId,
+      role,
+    );
   }
 
   @Get(':id')

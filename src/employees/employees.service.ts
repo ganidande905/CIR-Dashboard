@@ -85,4 +85,50 @@ export class EmployeesService {
       data: { password: hashedPassword }
     });
   }
+
+  /**
+   * Scoped findAll - restricts based on user role
+   */
+  async findAllScoped(
+    userId: number,
+    userRole: string,
+    userSubDepartmentId: number | null,
+    role?: 'ADMIN' | 'MANAGER' | 'STAFF',
+  ) {
+    const where: any = {};
+
+    // STAFF: Can only see themselves
+    if (userRole === 'STAFF') {
+      where.id = userId;
+    }
+
+    // MANAGER: Only their sub-department employees
+    if (userRole === 'MANAGER') {
+      if (!userSubDepartmentId) {
+        return [];
+      }
+      where.subDepartmentId = userSubDepartmentId;
+    }
+
+    // ADMIN: No restrictions
+
+    // Apply role filter
+    if (role) where.role = role;
+
+    return this.databaseService.employee.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        jobTitle: true,
+        isActive: true,
+        departmentId: true,
+        subDepartmentId: true,
+        createdAt: true,
+        // Exclude password
+      },
+    });
+  }
 }

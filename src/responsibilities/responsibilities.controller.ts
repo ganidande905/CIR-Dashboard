@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query,UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request } from '@nestjs/common';
 import { ResponsibilitiesService } from './responsibilities.service';
 import { Prisma, SubDepartmentType } from '@prisma/client';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 
 @Controller('responsibilities')
@@ -16,13 +17,12 @@ export class ResponsibilitiesController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  findAll(
-    @Query('type') type?: SubDepartmentType,
-    @Query('subDepartmentId') subDepartmentId?: string
-  ) {
-    return this.responsibilitiesService.findAll(
-      type,
-      subDepartmentId ? +subDepartmentId : undefined
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  findAll(@Request() req) {
+    return this.responsibilitiesService.findAllScoped(
+      req.user.id,
+      req.user.role,
+      req.user.subDepartmentId,
     );
   }
 

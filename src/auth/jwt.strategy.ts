@@ -15,7 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: { userId: number; role: string }) {
+  async validate(payload: { userId: number; role: string; departmentId: number | null; subDepartmentId: number | null }) {
     const user = await this.usersService.findOne(payload.userId);
 
     if (!user) {
@@ -27,6 +27,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       email: user.email,
       name: user.name,
       role: user.role,
+      departmentId: user.departmentId,
+      subDepartmentId: user.subDepartmentId,
     }
   }
 }

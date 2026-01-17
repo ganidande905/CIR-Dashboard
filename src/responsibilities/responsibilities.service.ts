@@ -56,6 +56,20 @@ export class ResponsibilitiesService {
     });
   }
 
+  async findAllByDepartment(userDepartmentId: number, userRole: string) {
+    if (userRole === 'ADMIN') {
+      return this.databaseService.responsibility.findMany();
+    }
+    // Manager/Staff: only their department
+    return this.databaseService.responsibility.findMany({
+      where: {
+        subDepartment: {
+          departmentId: userDepartmentId,
+        },
+      },
+    });
+  }
+
   async findOne(id: number) {
     return this.databaseService.responsibility.findUnique({
       where: {
@@ -123,6 +137,62 @@ export class ResponsibilitiesService {
           },
         },
         workSubmission: true,
+      },
+    });
+  }
+
+  /**
+   * Scoped findAll - restricts based on user role
+   */
+  async findAllScoped(
+    userId: number,
+    userRole: string,
+    userSubDepartmentId: number | null,
+  ) {
+    const where: any = {};
+
+    // STAFF: Only responsibilities assigned to them
+    if (userRole === 'STAFF') {
+      where.assignments = {
+        some: {
+          staffId: userId,
+        },
+      };
+    }
+
+    // MANAGER: Only their sub-department responsibilities
+    if (userRole === 'MANAGER') {
+      if (!userSubDepartmentId) {
+        return [];
+      }
+      where.subDepartmentId = userSubDepartmentId;
+    }
+
+    // ADMIN: No restrictions
+
+    return this.databaseService.responsibility.findMany({
+      where,
+      include: {
+        subDepartment: true,
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        assignments: {
+          include: {
+            staff: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+              },
+            },
+          },
+        },
       },
     });
   }
