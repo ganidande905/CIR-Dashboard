@@ -27,6 +27,11 @@ export class ResponsibilitiesService {
     endDate?: Date,
     isStaffCreated?: boolean,
   ) {
+    // Validate that user has a subDepartmentId
+    if (!userSubDepartmentId) {
+      throw new BadRequestException('User must be assigned to a sub-department to create responsibilities');
+    }
+
     // Staff creating their own responsibility
     if (userRole === 'STAFF') {
       // Staff can ONLY create for themselves - automatically set isStaffCreated
@@ -38,16 +43,24 @@ export class ResponsibilitiesService {
         throw new BadRequestException('Staff can only create responsibilities for the current day');
       }
 
-      // Auto-set dates to today for staff-created responsibilities
-      (createResponsibilityDto as any).startDate = today;
-      (createResponsibilityDto as any).endDate = today;
-      (createResponsibilityDto as any).isStaffCreated = true;  // Always true for staff
-
       // Use transaction to create responsibility and auto-assign to this staff member
       const result = await this.databaseService.$transaction(async (tx) => {
-        // Create the responsibility
+        // Create the responsibility with required relations
         const responsibility = await tx.responsibility.create({
-          data: createResponsibilityDto,
+          data: {
+            title: (createResponsibilityDto as any).title,
+            description: (createResponsibilityDto as any).description,
+            cycle: (createResponsibilityDto as any).cycle,
+            startDate: today,
+            endDate: today,
+            isStaffCreated: true,
+            createdBy: {
+              connect: { id: userId },
+            },
+            subDepartment: {
+              connect: { id: userSubDepartmentId },
+            },
+          },
         });
 
         // Auto-create assignment for this staff member for today
@@ -71,21 +84,34 @@ export class ResponsibilitiesService {
 
     // Manager/Admin setting date range
     if (userRole === 'MANAGER' || userRole === 'ADMIN') {
-      if (startDate && endDate) {
-        const start = this.getDateOnly(new Date(startDate));
-        const end = this.getDateOnly(new Date(endDate));
+      const start = startDate ? this.getDateOnly(new Date(startDate)) : undefined;
+      const end = endDate ? this.getDateOnly(new Date(endDate)) : undefined;
 
-        if (end < start) {
-          throw new BadRequestException('End date cannot be before start date');
-        }
-
-        (createResponsibilityDto as any).startDate = start;
-        (createResponsibilityDto as any).endDate = end;
+      if (start && end && end < start) {
+        throw new BadRequestException('End date cannot be before start date');
       }
-      (createResponsibilityDto as any).isStaffCreated = false;
+
+      const responsibility = await this.databaseService.responsibility.create({
+        data: {
+          title: (createResponsibilityDto as any).title,
+          description: (createResponsibilityDto as any).description,
+          cycle: (createResponsibilityDto as any).cycle,
+          startDate: start,
+          endDate: end,
+          isStaffCreated: false,
+          createdBy: {
+            connect: { id: userId },
+          },
+          subDepartment: {
+            connect: { id: userSubDepartmentId },
+          },
+        },
+      });
+
+      return responsibility;
     }
 
-    return this.create(createResponsibilityDto);
+    throw new BadRequestException('Invalid user role');
   }
 
   // Filter responsibilities by SubDepartment type
@@ -411,11 +437,11 @@ export class ResponsibilitiesService {
   }
 
   /**
-   * Helper: Get date only (strip time component)
+   * Helper: Get date only (strip time component) - UTC based to avoid timezone issues
    */
   private getDateOnly(date: Date): Date {
     const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    return d;
+    // Use UTC to avoid timezone conversion issues
+    return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0));
   }
 }
