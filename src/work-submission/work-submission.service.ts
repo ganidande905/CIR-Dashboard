@@ -4,7 +4,7 @@ import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class WorkSubmissionService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly databaseService: DatabaseService) { }
 
   /**
    * Helper: Get date only (strip time component) in UTC
@@ -432,7 +432,7 @@ export class WorkSubmissionService {
 
     // 5. Validate workDate - must be current date only (no backdating or future dating)
     const today = this.getTodayDateOnly();
-    const workDate = createWorkSubmissionDto.workDate 
+    const workDate = createWorkSubmissionDto.workDate
       ? this.getDateOnly(new Date(createWorkSubmissionDto.workDate as string | Date))
       : today;
 
@@ -458,7 +458,7 @@ export class WorkSubmissionService {
 
     // 7. Check if submission already exists for this assignment on this date
     const existingSubmission = await this.databaseService.workSubmission.findFirst({
-      where: { 
+      where: {
         assignmentId,
         workDate: today,
       },
@@ -620,7 +620,7 @@ export class WorkSubmissionService {
 
     for (const submission of submissions) {
       const dateKey = submission.workDate.toISOString().split('T')[0];
-      
+
       if (!calendarData[dateKey]) {
         calendarData[dateKey] = {
           date: dateKey,
@@ -634,7 +634,7 @@ export class WorkSubmissionService {
       const hours = submission.hoursWorked || 0;
       calendarData[dateKey].submissions.push(submission);
       calendarData[dateKey].totalHours += hours;
-      
+
       // Use submission.status (per-day status) instead of assignment.status
       if (submission.status === 'VERIFIED') {
         calendarData[dateKey].verifiedHours += hours;
