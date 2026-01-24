@@ -1,12 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { Prisma,SubDepartmentType } from '@prisma/client';
+import { Prisma, SubDepartmentType } from '@prisma/client';
+
+// Custom DTO to handle optional type field
+interface CreateSubDepartmentDto {
+  name: string;
+  description?: string;
+  departmentId: string | number;
+  type?: SubDepartmentType;
+}
+
 @Injectable()
 export class SubDepartmentsService {
   constructor(private readonly databaseService: DatabaseService) {}
-  async create(createSubDepartmentDto: Prisma.SubDepartmentCreateInput) {
+  async create(createSubDepartmentDto: CreateSubDepartmentDto) {
     return this.databaseService.subDepartment.create({
-      data: createSubDepartmentDto,
+      data: {
+        name: createSubDepartmentDto.name,
+        description: createSubDepartmentDto.description,
+        type: createSubDepartmentDto.type || SubDepartmentType.SKILLS, // Default type
+        department: {
+          connect: { id: Number(createSubDepartmentDto.departmentId) }
+        }
+      },
     })
   }
 

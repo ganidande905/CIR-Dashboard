@@ -1,8 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,Query,UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
-import { Prisma,  DepartmentType } from '@prisma/client';
+import { Prisma, DepartmentType } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+// DTO for creating departments
+interface CreateDepartmentDto {
+  name: string;
+  description?: string;
+  type?: DepartmentType;
+}
 
 @Controller('departments')
 export class DepartmentsController {
@@ -10,7 +16,7 @@ export class DepartmentsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Body() createDepartmentDto: Prisma.DepartmentCreateInput) {
+  create(@Body() createDepartmentDto: CreateDepartmentDto) {
     return this.departmentsService.create(createDepartmentDto);
   }
 

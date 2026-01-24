@@ -1,7 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,Query,UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { SubDepartmentsService } from './sub-departments.service';
-import { Prisma,SubDepartmentType } from '@prisma/client';
+import { Prisma, SubDepartmentType } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+
+// DTO for creating sub-departments
+interface CreateSubDepartmentDto {
+  name: string;
+  description?: string;
+  departmentId: string | number;
+  type?: SubDepartmentType;
+}
 
 @Controller('sub-departments')
 export class SubDepartmentsController {
@@ -9,7 +17,7 @@ export class SubDepartmentsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Body() createSubDepartmentDto: Prisma.SubDepartmentCreateInput) {
+  create(@Body() createSubDepartmentDto: CreateSubDepartmentDto) {
     return this.subDepartmentsService.create(createSubDepartmentDto);
   }
 
