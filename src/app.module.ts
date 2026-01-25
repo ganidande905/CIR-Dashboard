@@ -14,9 +14,10 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from './logger/logger.module';
 import { AuthModule } from './auth/auth.module';
+import { ResponsibilityGroupsModule } from './responsibility-groups/responsibility-groups.module';
 
 @Module({
-  imports: [UsersModule, DatabaseModule, EmployeesModule, DepartmentsModule, SubDepartmentsModule, ResponsibilitiesModule, AssignmentModule, WorkSubmissionModule, CommentsModule,ThrottlerModule.forRoot([{
+  imports: [UsersModule, DatabaseModule, EmployeesModule, DepartmentsModule, SubDepartmentsModule, ResponsibilitiesModule, AssignmentModule, WorkSubmissionModule, CommentsModule, ResponsibilityGroupsModule, ThrottlerModule.forRoot([{
     name: 'short',
     ttl:1000,
     limit:3,
