@@ -18,6 +18,8 @@ model Employee {
   password      String   // Hashed password for login
   role          Role     @default(STAFF)
   jobTitle      String?
+  avatarUrl     String?  // URL to profile avatar image
+  gender        Gender   @default(MALE)  // Gender for avatar selection
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -243,6 +245,11 @@ enum Role {
   ADMIN
   MANAGER
   STAFF
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
 
 enum DepartmentType {

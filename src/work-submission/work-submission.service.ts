@@ -283,9 +283,11 @@ export class WorkSubmissionService {
     }
 
     // 2. Check if already verified
-    if (submission.verifiedAt) {
-      throw new BadRequestException('This submission has already been verified');
-    }
+
+    //add for manager to approve and reject 
+    // if (submission.verifiedAt) {
+    //   throw new BadRequestException('This submission has already been verified');
+    // }
 
     // 3. Get the sub-department this submission belongs to
     const submissionSubDepartmentId = submission.assignment?.responsibility?.subDepartmentId;
